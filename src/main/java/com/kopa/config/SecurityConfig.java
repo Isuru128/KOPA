@@ -24,6 +24,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/",
+                    "/index",
+                    "/home",
                     "/index.html",
                     "/css/**",
                     "/js/**",
