@@ -27,7 +27,13 @@ public class User {
     
     private String phone;
     private String password;
-    private String role;
+    private String role; // CUSTOMER, BARISTA, ADMIN
+
+    @Builder.Default
+    private String provider = "LOCAL"; // LOCAL, GOOGLE, APPLE
+
+    private String providerId;
+    private String avatarUrl;
     
     @CreatedDate
     @Builder.Default
