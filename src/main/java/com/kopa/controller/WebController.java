@@ -25,4 +25,10 @@ public class WebController {
         model.addAttribute("tables", tableService.getAllTables());
         return "index";
     }
+
+    @GetMapping("/404")
+    public String notFound(Model model) {
+        model.addAttribute("path", "/404");
+        return "error/404";
+    }
 }
