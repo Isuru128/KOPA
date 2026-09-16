@@ -26,6 +26,18 @@ public class WebController {
         return "index";
     }
 
+    @GetMapping({"/signin", "/login"})
+    public String signin(Model model) {
+        model.addAttribute("appName", "KOPA Coffee Roasters");
+        return "signin";
+    }
+
+    @GetMapping({"/signup", "/register"})
+    public String signup(Model model) {
+        model.addAttribute("appName", "KOPA Coffee Roasters");
+        return "signup";
+    }
+
     @GetMapping("/404")
     public String notFound(Model model) {
         model.addAttribute("path", "/404");
