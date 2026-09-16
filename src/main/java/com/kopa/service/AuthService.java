@@ -101,4 +101,39 @@ public class AuthService {
                 .build();
         }
     }
+
+    public User authenticateSocial(String provider, String email, String name) {
+        String cleanEmail = (email != null && !email.isBlank())
+            ? email.trim().toLowerCase()
+            : "user." + UUID.randomUUID().toString().substring(0, 6) + "@" + provider.toLowerCase() + ".auth";
+
+        try {
+            Optional<User> existing = userRepository.findByEmailIgnoreCase(cleanEmail);
+            if (existing.isPresent()) {
+                return existing.get();
+            }
+        } catch (Exception e) {
+            log.warn("Error finding user during social login in MongoDB: {}", e.getMessage());
+        }
+
+        String displayName = (name != null && !name.isBlank())
+            ? name.trim()
+            : (provider.equalsIgnoreCase("apple") ? "Apple Coffee Connoisseur" : "Google Coffee Explorer");
+
+        User newUser = User.builder()
+            .name(displayName)
+            .email(cleanEmail)
+            .phone("")
+            .password("oauth-" + provider.toLowerCase() + "-" + UUID.randomUUID().toString().substring(0, 8))
+            .role("CUSTOMER")
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        try {
+            return userRepository.save(newUser);
+        } catch (Exception e) {
+            log.warn("Could not save social user in MongoDB: {}", e.getMessage());
+            return newUser;
+        }
+    }
 }
