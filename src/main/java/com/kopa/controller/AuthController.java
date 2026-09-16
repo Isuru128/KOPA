@@ -45,4 +45,13 @@ public class AuthController {
     public ResponseEntity<User> getDemoUser() {
         return ResponseEntity.ok(authService.getDemoUser());
     }
+
+    @PostMapping("/social")
+    public ResponseEntity<User> socialAuth(@RequestBody Map<String, String> payload) {
+        String provider = payload.getOrDefault("provider", "google");
+        String email = payload.get("email");
+        String name = payload.get("name");
+        User user = authService.authenticateSocial(provider, email, name);
+        return ResponseEntity.ok(user);
+    }
 }
