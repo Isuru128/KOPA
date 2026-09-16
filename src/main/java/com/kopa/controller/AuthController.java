@@ -1,5 +1,9 @@
 package com.kopa.controller;
 
+import com.kopa.dto.AuthRequest;
+import com.kopa.dto.AuthResponse;
+import com.kopa.dto.RegisterRequest;
+import com.kopa.dto.SocialLoginRequest;
 import com.kopa.model.User;
 import com.kopa.service.AuthService;
 import org.springframework.http.HttpStatus;
@@ -20,38 +24,33 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> creds) {
-        String email = creds.get("email");
-        String password = creds.get("password");
-
-        return authService.login(email, password)
-            .<ResponseEntity<?>>map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Invalid email or password. Use demo account or create a new profile.")));
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        AuthResponse response = authService.login(request);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody Map<String, String> payload) {
-        String name = payload.get("name");
-        String email = payload.get("email");
-        String phone = payload.get("phone");
-        String password = payload.get("password");
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        AuthResponse response = authService.register(request);
+        if (response.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 
-        User user = authService.register(name, email, phone, password);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    @PostMapping("/social")
+    public ResponseEntity<AuthResponse> socialAuth(@RequestBody SocialLoginRequest request) {
+        AuthResponse response = authService.authenticateSocial(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/demo")
     public ResponseEntity<User> getDemoUser() {
         return ResponseEntity.ok(authService.getDemoUser());
-    }
-
-    @PostMapping("/social")
-    public ResponseEntity<User> socialAuth(@RequestBody Map<String, String> payload) {
-        String provider = payload.getOrDefault("provider", "google");
-        String email = payload.get("email");
-        String name = payload.get("name");
-        User user = authService.authenticateSocial(provider, email, name);
-        return ResponseEntity.ok(user);
     }
 }
