@@ -15,10 +15,11 @@ export const Auth = {
   },
 
   loadSession() {
-    const saved = localStorage.getItem('kopa_auth_user');
+    const saved = localStorage.getItem('kopa_auth_user') || localStorage.getItem('kopa_user');
     if (saved) {
       try {
         this.currentUser = JSON.parse(saved);
+        localStorage.setItem('kopa_auth_user', JSON.stringify(this.currentUser));
       } catch (e) {
         this.currentUser = null;
       }
