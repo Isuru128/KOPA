@@ -598,6 +598,7 @@
 
           if (res.ok && data.success) {
             showAlert(data.message || 'Account created successfully!', true);
+            localStorage.setItem('kopa_auth_user', JSON.stringify(data.user));
             localStorage.setItem('kopa_user', JSON.stringify(data.user));
             if (data.token) localStorage.setItem('kopa_token', data.token);
 
@@ -635,6 +636,7 @@
             const data = await res.json();
             if (data.success) {
               showAlert('Welcome to KOPA, ' + data.user.name + '!', true);
+              localStorage.setItem('kopa_auth_user', JSON.stringify(data.user));
               localStorage.setItem('kopa_user', JSON.stringify(data.user));
               if (data.token) localStorage.setItem('kopa_token', data.token);
               setTimeout(() => { window.location.href = '/'; }, 800);
@@ -666,6 +668,7 @@
             const data = await res.json();
             if (data.success) {
               showAlert('Welcome to KOPA, ' + data.user.name + '!', true);
+              localStorage.setItem('kopa_auth_user', JSON.stringify(data.user));
               localStorage.setItem('kopa_user', JSON.stringify(data.user));
               if (data.token) localStorage.setItem('kopa_token', data.token);
               setTimeout(() => { window.location.href = '/'; }, 800);

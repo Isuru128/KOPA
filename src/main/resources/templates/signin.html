@@ -654,6 +654,7 @@
             const data = await res.json();
             if (data.success) {
               showAlert('Authenticated with Apple ID!', true);
+              localStorage.setItem('kopa_auth_user', JSON.stringify(data.user));
               localStorage.setItem('kopa_user', JSON.stringify(data.user));
               if (data.token) localStorage.setItem('kopa_token', data.token);
               setTimeout(() => { window.location.href = '/'; }, 800);
