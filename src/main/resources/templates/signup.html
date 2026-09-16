@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create an Account — KOPA Specialty Coffee</title>
+  <meta name="description" content="Join KOPA Coffee Roasters to unlock VIP table reservations, handcrafted coffee pre-ordering, and exclusive barista tastings.">
+  <meta name="theme-color" content="#0A0908">
+
+  <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      background: radial-gradient(circle at 50% 15%, rgba(212, 139, 70, 0.15) 0%, rgba(10, 9, 8, 0.98) 75%);
+      overflow-x: hidden;
+    }
+
+    .auth-glow {
+      position: absolute;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(234, 167, 98, 0.18) 0%, rgba(74, 46, 27, 0) 70%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      filter: blur(55px);
+    }
+
+    .auth-card {
+      position: relative;
+      z-index: 2;
+      max-width: 500px;
+      width: 100%;
+      background: var(--bg-glass-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 38px 36px;
+      box-shadow: var(--shadow-lg), 0 0 40px rgba(212, 139, 70, 0.12);
+      animation: fadeInCard 0.4s ease-out;
+    }
+
+    @keyframes fadeInCard {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-brand {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .auth-brand a {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .auth-brand .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent-amber), var(--accent-caramel));
+      color: #0A0908;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 14px rgba(212, 139, 70, 0.3);
+    }
+
+    .auth-brand .logo-title {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .auth-brand .logo-sub {
+      font-size: 0.72rem;
+      color: var(--accent-amber);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .auth-heading {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .auth-heading h1 {
+      font-family: var(--font-serif);
+      font-size: 1.65rem;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .auth-heading p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    /* Social Buttons */
+    .social-btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .btn-social {
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: 1px solid var(--border-card);
+      text-decoration: none;
+    }
+
+    .btn-google {
+      background: #FFFFFF;
+      color: #1F1F1F;
+      border: 1px solid #DADCE0;
+    }
+
+    .btn-google:hover {
+      background: #F8F9FA;
+      box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-apple {
+      background: #000000;
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-apple:hover {
+      background: #1A1A1A;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-card);
+    }
+
+    /* Form Fields */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .social-btn-group {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 44px;
+      background: rgba(19, 16, 14, 0.7);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 0 38px 0 38px;
+      color: var(--text-primary);
+      font-size: 0.92rem;
+      font-family: var(--font-sans);
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-caramel);
+      box-shadow: 0 0 0 3px rgba(212, 139, 70, 0.2);
+      background: rgba(28, 23, 20, 0.9);
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .password-toggle-btn:hover {
+      color: var(--accent-amber);
+    }
+
+    /* Password Strength Indicator */
+    .strength-meter {
+      height: 4px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: all 0.3s ease;
+      background: #E27357;
+    }
+
+    .strength-fill.weak { width: 33%; background: #E27357; }
+    .strength-fill.medium { width: 66%; background: #EAA762; }
+    .strength-fill.strong { width: 100%; background: #4EBA87; }
+
+    .terms-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin: 16px 0 20px;
+      cursor: pointer;
+      line-height: 1.4;
+    }
+
+    .terms-label a {
+      color: var(--accent-amber);
+      text-decoration: underline;
+    }
+
+    .btn-auth-submit {
+      width: 100%;
+      height: 48px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--accent-caramel), #8C5A3C);
+      color: #FFFFFF;
+      font-size: 0.98rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 16px rgba(212, 139, 70, 0.35);
+      cursor: pointer;
+      transition: all 0.28s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-auth-submit:hover {
+      background: linear-gradient(135deg, var(--accent-amber), var(--accent-caramel));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 139, 70, 0.5);
+    }
+
+    .btn-auth-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .auth-footer a {
+      color: var(--accent-amber);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Alert Banner */
+    .auth-alert {
+      background: rgba(226, 115, 87, 0.15);
+      border: 1px solid var(--status-maintenance);
+      color: #FFB4A2;
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 0.84rem;
+      margin-bottom: 16px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .auth-alert.success {
+      background: rgba(78, 186, 135, 0.15);
+      border-color: var(--status-confirmed);
+      color: #A7F3D0;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="auth-page">
+    <div class="auth-glow"></div>
+
+    <div class="auth-card">
+      <!-- Brand Logo Header -->
+      <div class="auth-brand">
+        <a th:href="@{/}" href="/">
+          <div class="logo-icon">K</div>
+          <div style="text-align: left;">
+            <div class="logo-title">KOPA</div>
+            <div class="logo-sub">Coffee Roasters</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Heading -->
+      <div class="auth-heading">
+        <h1>Join the Coffee Club</h1>
+        <p>Unlock priority reservations, express ordering, and barista perks.</p>
+      </div>
+
+      <!-- Social Logins (Google & Apple) -->
+      <div class="social-btn-group">
+        <!-- Google Sign-Up Button -->
+        <button type="button" class="btn-social btn-google" id="googleSignUpBtn">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+          </svg>
+          <span>Google</span>
+        </button>
+
+        <!-- Apple Sign-Up Button -->
+        <button type="button" class="btn-social btn-apple" id="appleSignUpBtn">
+          <svg width="18" height="18" viewBox="0 0 170 170" fill="currentColor">
+            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.7-7.83-12.01-14.38-6.19-9.35-11.08-19.8-14.67-31.35-3.59-11.55-5.39-22.33-5.39-32.34 0-14.67 3.73-26.63 11.19-35.88 7.46-9.25 16.7-13.98 27.72-14.19 4.35 0 9.38 1.16 15.09 3.49 5.71 2.33 9.4 3.54 11.07 3.65 2.12-.22 6.01-1.49 11.67-3.81 5.66-2.33 10.42-3.38 14.28-3.17 14.19.74 25.13 6.13 32.83 16.18-12.59 7.64-18.73 18.04-18.41 31.2.32 10.3 4.22 18.84 11.7 25.62 7.48 6.78 16.32 10.59 26.52 11.44-2.12 6.53-4.7 13.04-7.74 19.53zM119.22 33.04c0-7.23 2.65-13.9 7.94-20.01 5.29-6.11 11.85-10.23 19.68-12.36.95 7.87-1.37 15.04-6.98 21.5-5.61 6.46-12.48 10.38-20.64 10.87z"/>
+          </svg>
+          <span>Apple ID</span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div class="auth-divider">
+        <span>or sign up with email</span>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="auth-alert" id="authAlert">
+        <span id="alertIcon">⚠️</span>
+        <span id="alertMessage">Please check your information</span>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="signUpForm" autocomplete="on">
+        <!-- Full Name -->
+        <div class="form-group">
+          <label class="form-label" for="signUpName">Full Name</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <input type="text" class="form-input" id="signUpName" name="name" placeholder="Alexander Vance" required autocomplete="name">
+          </div>
+        </div>
+
+        <!-- Email & Phone Row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="signUpEmail">Email Address</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </span>
+              <input type="email" class="form-input" id="signUpEmail" name="email" placeholder="name@domain.com" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signUpPhone">Phone (Optional)</label>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+              </span>
+              <input type="tel" class="form-input" id="signUpPhone" name="phone" placeholder="+94 77 123 4567" autocomplete="tel">
+            </div>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="signUpPassword">Password (min 4 characters)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <input type="password" class="form-input" id="signUpPassword" name="password" placeholder="••••••••" required autocomplete="new-password">
+            <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Toggle password visibility">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div class="strength-meter">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+        </div>
+
+        <!-- Terms Agreement -->
+        <label class="terms-label">
+          <input type="checkbox" id="termsCheck" required checked style="accent-color: var(--accent-caramel); margin-top: 3px;">
+          <span>I agree to receive artisanal brew updates and accept the <a href="#">Terms & Coffee Club Policies</a>.</span>
+        </label>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-auth-submit" id="submitSignUpBtn">
+          <span>Create My KOPA Account</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Switch to Sign In -->
+      <div class="auth-footer">
+        Already have an account? <a th:href="@{/signin}" href="/signin">Sign In here</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('signUpForm');
+      const nameInput = document.getElementById('signUpName');
+      const emailInput = document.getElementById('signUpEmail');
+      const phoneInput = document.getElementById('signUpPhone');
+      const passwordInput = document.getElementById('signUpPassword');
+      const strengthFill = document.getElementById('strengthFill');
+      const submitBtn = document.getElementById('submitSignUpBtn');
+      const authAlert = document.getElementById('authAlert');
+      const alertMsg = document.getElementById('alertMessage');
+      const alertIcon = document.getElementById('alertIcon');
+      const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+      const googleBtn = document.getElementById('googleSignUpBtn');
+      const appleBtn = document.getElementById('appleSignUpBtn');
+
+      function showAlert(message, isSuccess = false) {
+        authAlert.style.display = 'flex';
+        authAlert.className = isSuccess ? 'auth-alert success' : 'auth-alert';
+        alertIcon.innerText = isSuccess ? '✓' : '⚠️';
+        alertMsg.innerText = message;
+      }
+
+      function hideAlert() {
+        authAlert.style.display = 'none';
+      }
+
+      // Password Strength Meter
+      if (passwordInput && strengthFill) {
+        passwordInput.addEventListener('input', () => {
+          const val = passwordInput.value;
+          if (!val) {
+            strengthFill.className = 'strength-fill';
+          } else if (val.length < 5) {
+            strengthFill.className = 'strength-fill weak';
+          } else if (val.length < 8) {
+            strengthFill.className = 'strength-fill medium';
+          } else {
+            strengthFill.className = 'strength-fill strong';
+          }
+        });
+      }
+
+      // Toggle Password Visibility
+      if (togglePasswordBtn) {
+        togglePasswordBtn.addEventListener('click', () => {
+          const isPassword = passwordInput.type === 'password';
+          passwordInput.type = isPassword ? 'text' : 'password';
+          togglePasswordBtn.innerHTML = isPassword
+            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`
+            : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        });
+      }
+
+      // Handle Registration Form Submit
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert();
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const phone = phoneInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!name || !email || !password) {
+          showAlert('Please complete all required fields.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span>Creating Account...</span>`;
+
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, phone, password })
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            showAlert(data.message || 'Account created successfully!', true);
+            localStorage.setItem('kopa_user', JSON.stringify(data.user));
+            if (data.token) localStorage.setItem('kopa_token', data.token);
+
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 800);
+          } else {
+            showAlert(data.message || 'Registration failed. Email might already exist.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<span>Create My KOPA Account</span>`;
+          }
+        } catch (err) {
+          console.error(err);
+          showAlert('Connection error. Could not reach server.');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span>Create My KOPA Account</span>`;
+        }
+      });
+
+      // Google Sign-Up
+      if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+          googleBtn.disabled = true;
+          try {
+            const res = await fetch('/api/auth/social', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                provider: 'google',
+                email: 'alexander.google@kopa.coffee',
+                name: 'Alexander Vance (Google)',
+                avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              showAlert('Welcome to KOPA, ' + data.user.name + '!', true);
+              localStorage.setItem('kopa_user', JSON.stringify(data.user));
+              if (data.token) localStorage.setItem('kopa_token', data.token);
+              setTimeout(() => { window.location.href = '/'; }, 800);
+            } else {
+              showAlert(data.message || 'Google registration failed.');
+              googleBtn.disabled = false;
+            }
+          } catch (err) {
+            showAlert('Social signup error.');
+            googleBtn.disabled = false;
+          }
+        });
+      }
+
+      // Apple Sign-Up
+      if (appleBtn) {
+        appleBtn.addEventListener('click', async () => {
+          appleBtn.disabled = true;
+          try {
+            const res = await fetch('/api/auth/social', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                provider: 'apple',
+                email: 'connoisseur.apple@kopa.coffee',
+                name: 'KOPA Apple Connoisseur'
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              showAlert('Welcome to KOPA, ' + data.user.name + '!', true);
+              localStorage.setItem('kopa_user', JSON.stringify(data.user));
+              if (data.token) localStorage.setItem('kopa_token', data.token);
+              setTimeout(() => { window.location.href = '/'; }, 800);
+            } else {
+              showAlert(data.message || 'Apple registration failed.');
+              appleBtn.disabled = false;
+            }
+          } catch (err) {
+            showAlert('Social signup error.');
+            appleBtn.disabled = false;
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
