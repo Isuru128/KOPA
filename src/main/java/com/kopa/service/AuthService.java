@@ -6,7 +6,6 @@ import com.kopa.dto.RegisterRequest;
 import com.kopa.dto.SocialLoginRequest;
 import com.kopa.model.User;
 import com.kopa.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,38 +19,22 @@ public class AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
-    @PostConstruct
-    public void init() {
-        try {
-            if (!userRepository.existsByEmailIgnoreCase("guest@kopa.coffee")) {
-                User demoUser = User.builder()
-                    .id("usr-demo-1")
-                    .name("Alexander Vance")
-                    .email("guest@kopa.coffee")
-                    .phone("+94 77 123 4567")
-                    .password("kopa123")
-                    .role("CUSTOMER")
-                    .provider("LOCAL")
-                    .createdAt(LocalDateTime.now())
-                    .build();
-                userRepository.save(demoUser);
-                log.info("Initialized default demo user in MongoDB: guest@kopa.coffee");
-            }
-        } catch (Exception e) {
-            log.warn("Could not seed demo user to MongoDB (check connection): {}", e.getMessage());
-        }
-    }
-
+    /**
+     * Authenticate real registered user with email and password
+     */
     public AuthResponse login(AuthRequest request) {
-        if (request == null || request.getEmail() == null || request.getPassword() == null) {
+        if (request == null || request.getEmail() == null || request.getEmail().isBlank() 
+            || request.getPassword() == null || request.getPassword().isBlank()) {
             return AuthResponse.builder()
                 .success(false)
-                .message("Email and password are required.")
+                .message("Please provide both email address and password.")
                 .build();
         }
 
@@ -62,34 +45,23 @@ public class AuthService {
             Optional<User> userOpt = userRepository.findByEmailIgnoreCase(email);
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                if (user.getPassword().equals(password) || "demo".equalsIgnoreCase(password)) {
-                    String token = "kopa_jwt_" + UUID.randomUUID().toString();
+                if (user.getPassword() != null && user.getPassword().equals(password)) {
+                    String token = jwtService.generateToken(user);
                     return AuthResponse.builder()
                         .success(true)
-                        .message("Welcome back to KOPA, " + user.getName() + "!")
+                        .message("Welcome back, " + user.getName() + "!")
                         .token(token)
                         .user(user)
                         .build();
                 }
             }
         } catch (Exception e) {
-            log.error("Error during login query in MongoDB: {}", e.getMessage());
-        }
-
-        // Check fallback demo account
-        if ("guest@kopa.coffee".equalsIgnoreCase(email) && ("kopa123".equals(password) || "demo".equalsIgnoreCase(password))) {
-            User demo = getDemoUser();
-            return AuthResponse.builder()
-                .success(true)
-                .message("Welcome back to KOPA, " + demo.getName() + "!")
-                .token("kopa_jwt_" + UUID.randomUUID())
-                .user(demo)
-                .build();
+            log.error("Database error during user login: {}", e.getMessage());
         }
 
         return AuthResponse.builder()
             .success(false)
-            .message("Invalid email or password. Please try again or use the demo account.")
+            .message("Invalid email or password. Please check your credentials or create a new account.")
             .build();
     }
 
@@ -98,15 +70,20 @@ public class AuthService {
         return res.isSuccess() ? Optional.ofNullable(res.getUser()) : Optional.empty();
     }
 
+    /**
+     * Register a new real user account and persist into MongoDB
+     */
     public AuthResponse register(RegisterRequest request) {
-        if (request == null || request.getEmail() == null || request.getEmail().isBlank()) {
+        if (request == null || request.getEmail() == null || request.getEmail().isBlank()
+            || request.getName() == null || request.getName().isBlank()
+            || request.getPassword() == null || request.getPassword().isBlank()) {
             return AuthResponse.builder()
                 .success(false)
-                .message("Valid email address is required.")
+                .message("Full name, valid email address and password are required.")
                 .build();
         }
 
-        if (request.getPassword() == null || request.getPassword().length() < 4) {
+        if (request.getPassword().length() < 4) {
             return AuthResponse.builder()
                 .success(false)
                 .message("Password must be at least 4 characters long.")
@@ -119,19 +96,15 @@ public class AuthService {
             if (userRepository.existsByEmailIgnoreCase(cleanEmail)) {
                 return AuthResponse.builder()
                     .success(false)
-                    .message("An account with this email already exists. Please sign in.")
+                    .message("An account with this email address is already registered. Please sign in.")
                     .build();
             }
         } catch (Exception e) {
             log.warn("Could not check duplicate email in MongoDB: {}", e.getMessage());
         }
 
-        String name = (request.getName() != null && !request.getName().isBlank())
-            ? request.getName().trim()
-            : "KOPA Coffee Lover";
-
-        User user = User.builder()
-            .name(name)
+        User newUser = User.builder()
+            .name(request.getName().trim())
             .email(cleanEmail)
             .phone(request.getPhone() != null ? request.getPhone().trim() : "")
             .password(request.getPassword())
@@ -141,20 +114,21 @@ public class AuthService {
             .build();
 
         try {
-            user = userRepository.save(user);
+            newUser = userRepository.save(newUser);
         } catch (Exception e) {
-            log.warn("Could not save new user in MongoDB, using in-memory model: {}", e.getMessage());
-            if (user.getId() == null) {
-                user.setId("usr-" + UUID.randomUUID().toString().substring(0, 8));
-            }
+            log.error("Failed to save new user to database: {}", e.getMessage());
+            return AuthResponse.builder()
+                .success(false)
+                .message("Database error while registering account. Please try again.")
+                .build();
         }
 
-        String token = "kopa_jwt_" + UUID.randomUUID().toString();
+        String token = jwtService.generateToken(newUser);
         return AuthResponse.builder()
             .success(true)
-            .message("Account created successfully! Welcome to KOPA Coffee.")
+            .message("Welcome to KOPA Coffee, " + newUser.getName() + "! Your account is active.")
             .token(token)
-            .user(user)
+            .user(newUser)
             .build();
     }
 
@@ -163,48 +137,43 @@ public class AuthService {
         return res.getUser();
     }
 
+    /**
+     * Real Social Login / OAuth account provisioner
+     */
     public AuthResponse authenticateSocial(SocialLoginRequest request) {
-        if (request == null || request.getProvider() == null) {
+        if (request == null || request.getProvider() == null || request.getEmail() == null || request.getEmail().isBlank()) {
             return AuthResponse.builder()
                 .success(false)
-                .message("Provider (google/apple) is required.")
+                .message("Valid social provider and email are required.")
                 .build();
         }
 
         String provider = request.getProvider().trim().toUpperCase();
-        String email = request.getEmail();
-        if (email == null || email.isBlank()) {
-            email = (provider.equals("APPLE") ? "apple.user." : "google.user.") +
-                    UUID.randomUUID().toString().substring(0, 6) + "@kopa.oauth";
-        }
-        email = email.trim().toLowerCase();
-
-        String name = request.getName();
-        if (name == null || name.isBlank()) {
-            name = provider.equals("APPLE") ? "Apple Coffee Connoisseur" : "Google Coffee Explorer";
-        }
+        String cleanEmail = request.getEmail().trim().toLowerCase();
+        String name = (request.getName() != null && !request.getName().isBlank())
+            ? request.getName().trim()
+            : (provider.equals("APPLE") ? "Apple Coffee Member" : "Google Coffee Member");
 
         User user = null;
         try {
-            Optional<User> existing = userRepository.findByEmailIgnoreCase(email);
+            Optional<User> existing = userRepository.findByEmailIgnoreCase(cleanEmail);
             if (existing.isPresent()) {
                 user = existing.get();
-                // Update avatar if newly provided
                 if (request.getAvatarUrl() != null && !request.getAvatarUrl().isBlank()) {
                     user.setAvatarUrl(request.getAvatarUrl());
                     userRepository.save(user);
                 }
             }
         } catch (Exception e) {
-            log.warn("Error finding user during social login in MongoDB: {}", e.getMessage());
+            log.warn("Database error during social user lookup: {}", e.getMessage());
         }
 
         if (user == null) {
             user = User.builder()
                 .name(name)
-                .email(email)
+                .email(cleanEmail)
                 .phone("")
-                .password("oauth-" + provider.toLowerCase() + "-" + UUID.randomUUID().toString().substring(0, 8))
+                .password("oauth-" + provider.toLowerCase() + "-" + UUID.randomUUID().toString().substring(0, 10))
                 .role("CUSTOMER")
                 .provider(provider)
                 .providerId(request.getIdToken())
@@ -215,55 +184,35 @@ public class AuthService {
             try {
                 user = userRepository.save(user);
             } catch (Exception e) {
-                log.warn("Could not save social user in MongoDB: {}", e.getMessage());
-                if (user.getId() == null) {
-                    user.setId("usr-" + UUID.randomUUID().toString().substring(0, 8));
-                }
+                log.error("Failed to persist social user in database: {}", e.getMessage());
+                return AuthResponse.builder()
+                    .success(false)
+                    .message("Failed to create social account in database.")
+                    .build();
             }
         }
 
-        String token = "kopa_oauth_" + provider.toLowerCase() + "_" + UUID.randomUUID().toString();
+        String token = jwtService.generateToken(user);
         return AuthResponse.builder()
             .success(true)
-            .message("Signed in with " + provider.charAt(0) + provider.substring(1).toLowerCase() + " successfully!")
+            .message("Authenticated with " + provider.charAt(0) + provider.substring(1).toLowerCase() + " successfully!")
             .token(token)
             .user(user)
             .build();
     }
 
-    public User authenticateSocial(String provider, String email, String name) {
-        SocialLoginRequest req = SocialLoginRequest.builder()
-            .provider(provider)
-            .email(email)
-            .name(name)
-            .build();
-        return authenticateSocial(req).getUser();
+    public Optional<User> getUserByEmail(String email) {
+        if (email == null || email.isBlank()) return Optional.empty();
+        return userRepository.findByEmailIgnoreCase(email.trim());
     }
 
-    public User getDemoUser() {
-        try {
-            return userRepository.findByEmailIgnoreCase("guest@kopa.coffee")
-                .orElseGet(() -> User.builder()
-                    .id("usr-demo-1")
-                    .name("Alexander Vance")
-                    .email("guest@kopa.coffee")
-                    .phone("+94 77 123 4567")
-                    .password("kopa123")
-                    .role("CUSTOMER")
-                    .provider("LOCAL")
-                    .createdAt(LocalDateTime.now())
-                    .build());
-        } catch (Exception e) {
-            return User.builder()
-                .id("usr-demo-1")
-                .name("Alexander Vance")
-                .email("guest@kopa.coffee")
-                .phone("+94 77 123 4567")
-                .password("kopa123")
-                .role("CUSTOMER")
-                .provider("LOCAL")
-                .createdAt(LocalDateTime.now())
-                .build();
+    public Optional<User> getUserFromJwtToken(String token) {
+        if (token == null || token.isBlank()) return Optional.empty();
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7).trim();
         }
+        if (!jwtService.isTokenValid(token)) return Optional.empty();
+        String email = jwtService.extractEmail(token);
+        return getUserByEmail(email);
     }
 }
