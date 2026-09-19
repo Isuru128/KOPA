@@ -47,6 +47,7 @@ export const Auth = {
       const user = await ApiClient.login(email, password);
       this.currentUser = user;
       localStorage.setItem('kopa_auth_user', JSON.stringify(user));
+      localStorage.setItem('kopa_user', JSON.stringify(user));
       this.updateUI();
       Cart.showToast(`Welcome back, ${user.name}`);
       this.closeModal();
@@ -63,6 +64,7 @@ export const Auth = {
       const user = await ApiClient.register(name, email, phone, password);
       this.currentUser = user;
       localStorage.setItem('kopa_auth_user', JSON.stringify(user));
+      localStorage.setItem('kopa_user', JSON.stringify(user));
       this.updateUI();
       Cart.showToast(`Welcome to KOPA, ${user.name}`);
       this.closeModal();
@@ -77,6 +79,8 @@ export const Auth = {
   logout() {
     this.currentUser = null;
     localStorage.removeItem('kopa_auth_user');
+    localStorage.removeItem('kopa_user');
+    localStorage.removeItem('kopa_token');
     this.updateUI();
     Cart.showToast('Logged out successfully');
     if (window.loadMyReservations) window.loadMyReservations();
@@ -116,17 +120,15 @@ export const Auth = {
     const registerTabBtn = document.getElementById('authRegisterTabBtn');
     const loginForm = document.getElementById('authLoginForm');
     const registerForm = document.getElementById('authRegisterForm');
-    const demoLoginBtn = document.getElementById('authDemoLoginBtn');
     const logoutBtn = document.getElementById('userLogoutBtn');
 
     openBtns.forEach(btn => {
       btn.onclick = () => {
         if (this.currentUser) {
-          // If logged in, navigate to My Reservations
           const dash = document.getElementById('myReservations');
           if (dash) dash.scrollIntoView({ behavior: 'smooth' });
         } else {
-          this.openModal();
+          window.location.href = '/signin';
         }
       };
     });
@@ -173,13 +175,6 @@ export const Auth = {
         const phone = document.getElementById('regPhoneInput').value;
         const pass = document.getElementById('regPasswordInput').value;
         await this.register(name, email, phone, pass);
-      };
-    }
-
-    // 1-Click Demo Login
-    if (demoLoginBtn) {
-      demoLoginBtn.onclick = async () => {
-        await this.login('guest@kopa.coffee', 'kopa123');
       };
     }
 
