@@ -34,95 +34,7 @@ public class ReservationService {
 
     @PostConstruct
     public void init() {
-        seedSampleReservations();
-    }
-
-    private void seedSampleReservations() {
-        LocalDate today = LocalDate.now();
-        String dateStr = today.plusDays(1).toString();
-
-        Reservation sample1 = Reservation.builder()
-            .id("res-init-1")
-            .reservationId("KOPA-2026-00482")
-            .userId("usr-demo-1")
-            .customerName("Alexander Vance")
-            .customerEmail("guest@kopa.coffee")
-            .customerPhone("+94 77 123 4567")
-            .tableId("tbl-08")
-            .tableNumber("08")
-            .tableType("Group Table")
-            .tableLocation("Library Corner")
-            .date(dateStr)
-            .startTime("19:00")
-            .endTime("20:30")
-            .durationMinutes(90)
-            .guestCount(2)
-            .orderItems(List.of(
-                OrderItem.builder()
-                    .productId("prod-latte-sig")
-                    .productName("KOPA Signature Latte")
-                    .unitPrice(4.50)
-                    .quantity(2)
-                    .size("Medium")
-                    .milk("Oat")
-                    .extras(List.of("Caramel finish"))
-                    .subtotal(9.00)
-                    .build(),
-                OrderItem.builder()
-                    .productId("prod-pain-chocolat")
-                    .productName("Pain au Chocolat")
-                    .unitPrice(3.80)
-                    .quantity(1)
-                    .size("Single")
-                    .milk("None")
-                    .extras(List.of("Warm up"))
-                    .subtotal(3.80)
-                    .build()
-            ))
-            .totalAmount(12.80)
-            .status("CONFIRMED")
-            .specialNotes("Window seat requested for evening celebration.")
-            .qrCode("KOPA-RESERVATION|KOPA-2026-00482|Table 08|" + dateStr + " 19:00|Guests: 2")
-            .createdAt(LocalDateTime.now().minusHours(2))
-            .build();
-
-        Reservation sample2 = Reservation.builder()
-            .id("res-init-2")
-            .reservationId("KOPA-2026-00480")
-            .userId("usr-demo-2")
-            .customerName("Elena Rostova")
-            .customerEmail("elena@example.com")
-            .customerPhone("+94 71 987 6543")
-            .tableId("tbl-02")
-            .tableNumber("02")
-            .tableType("Window Table")
-            .tableLocation("Window Bay")
-            .date(today.toString())
-            .startTime("15:00")
-            .endTime("16:30")
-            .durationMinutes(90)
-            .guestCount(4)
-            .orderItems(Collections.emptyList())
-            .totalAmount(0.0)
-            .status("PREPARING")
-            .qrCode("KOPA-RESERVATION|KOPA-2026-00480|Table 02|" + today + " 15:00|Guests: 4")
-            .createdAt(LocalDateTime.now().minusDays(1))
-            .build();
-
-        fallbackMap.put(sample1.getId(), sample1);
-        fallbackMap.put(sample1.getReservationId(), sample1);
-        fallbackMap.put(sample2.getId(), sample2);
-        fallbackMap.put(sample2.getReservationId(), sample2);
-
-        try {
-            if (reservationRepository.count() == 0) {
-                reservationRepository.save(sample1);
-                reservationRepository.save(sample2);
-                log.info("Successfully seeded sample reservations into MongoDB Atlas");
-            }
-        } catch (Exception e) {
-            log.warn("Could not seed reservations to MongoDB Atlas (check MONGODB_URI in .env): {}", e.getMessage());
-        }
+        log.info("ReservationService initialized for real user reservations.");
     }
 
     public List<TableAvailabilityDTO> getTableAvailability(String date, String startTime, int guestCount) {
@@ -234,8 +146,8 @@ public class ReservationService {
             .reservationId(formattedCode)
             .userId(request.getUserId() != null ? request.getUserId() : "guest-user")
             .customerName(request.getCustomerName() != null ? request.getCustomerName() : "KOPA Guest")
-            .customerEmail(request.getCustomerEmail() != null ? request.getCustomerEmail() : "guest@kopa.coffee")
-            .customerPhone(request.getCustomerPhone() != null ? request.getCustomerPhone() : "+94 77 000 0000")
+            .customerEmail(request.getCustomerEmail() != null ? request.getCustomerEmail() : "")
+            .customerPhone(request.getCustomerPhone() != null ? request.getCustomerPhone() : "")
             .tableId(table.getId())
             .tableNumber(table.getTableNumber())
             .tableType(table.getType())
