@@ -10,8 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
@@ -46,11 +44,28 @@ public class AuthController {
     @PostMapping("/social")
     public ResponseEntity<AuthResponse> socialAuth(@RequestBody SocialLoginRequest request) {
         AuthResponse response = authService.authenticateSocial(request);
-        return ResponseEntity.ok(response);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
-    @GetMapping("/demo")
-    public ResponseEntity<User> getDemoUser() {
-        return ResponseEntity.ok(authService.getDemoUser());
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(
+        @RequestHeader(value = "Authorization", required = false) String authHeader,
+        @RequestParam(value = "email", required = false) String email
+    ) {
+        if (authHeader != null && !authHeader.isBlank()) {
+            return authService.getUserFromJwtToken(authHeader)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired JWT token"));
+        }
+        if (email != null && !email.isBlank()) {
+            return authService.getUserByEmail(email)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing Authorization header or email parameter");
     }
 }
