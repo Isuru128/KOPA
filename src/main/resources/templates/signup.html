@@ -12,6 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" th:href="@{/favicon.png}" href="/favicon.png">
+  <link rel="apple-touch-icon" th:href="@{/favicon.png}" href="/favicon.png">
+
   <!-- Stylesheet -->
   <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
 
@@ -378,7 +382,7 @@
       <!-- Brand Logo Header -->
       <div class="auth-brand">
         <a th:href="@{/}" href="/">
-          <div class="logo-icon">K</div>
+          <img th:src="@{/images/kopa_logo.png}" src="/images/kopa_logo.png" alt="KOPA Coffee Logo" class="brand-logo-img" style="width: 44px; height: 44px;">
           <div style="text-align: left;">
             <div class="logo-title">KOPA</div>
             <div class="logo-sub">Coffee Roasters</div>
@@ -437,7 +441,7 @@
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
             </span>
-            <input type="text" class="form-input" id="signUpName" name="name" placeholder="Alexander Vance" required autocomplete="name">
+            <input type="text" class="form-input" id="signUpName" name="name" placeholder="e.g. Liam Vance" required autocomplete="name">
           </div>
         </div>
 
@@ -621,6 +625,12 @@
       // Google Sign-Up
       if (googleBtn) {
         googleBtn.addEventListener('click', async () => {
+          const email = prompt('Enter your Google Account email to register:');
+          if (!email || !email.includes('@')) {
+            if (email !== null) showAlert('Please enter a valid Google email address.');
+            return;
+          }
+          const name = email.split('@')[0].replace(/[._]/g, ' ');
           googleBtn.disabled = true;
           try {
             const res = await fetch('/api/auth/social', {
@@ -628,9 +638,8 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 provider: 'google',
-                email: 'alexander.google@kopa.coffee',
-                name: 'Alexander Vance (Google)',
-                avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+                email: email.trim(),
+                name: name.charAt(0).toUpperCase() + name.slice(1)
               })
             });
             const data = await res.json();
@@ -654,6 +663,12 @@
       // Apple Sign-Up
       if (appleBtn) {
         appleBtn.addEventListener('click', async () => {
+          const email = prompt('Enter your Apple ID email to register:');
+          if (!email || !email.includes('@')) {
+            if (email !== null) showAlert('Please enter a valid Apple ID email address.');
+            return;
+          }
+          const name = email.split('@')[0].replace(/[._]/g, ' ');
           appleBtn.disabled = true;
           try {
             const res = await fetch('/api/auth/social', {
@@ -661,8 +676,8 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 provider: 'apple',
-                email: 'connoisseur.apple@kopa.coffee',
-                name: 'KOPA Apple Connoisseur'
+                email: email.trim(),
+                name: name.charAt(0).toUpperCase() + name.slice(1)
               })
             });
             const data = await res.json();
