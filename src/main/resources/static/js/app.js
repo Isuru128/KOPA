@@ -7,11 +7,13 @@ import { Menu } from './menu.js';
 import { Reservation } from './reservation.js';
 import { Auth } from './auth.js';
 import { Dashboard } from './dashboard.js';
+import { CookieConsent } from './cookie-consent.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize Core Systems
   Cart.init();
   Auth.init();
+  CookieConsent.init();
   await Menu.init();
   Reservation.init();
   await Dashboard.init();
