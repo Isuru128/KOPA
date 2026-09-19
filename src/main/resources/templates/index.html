@@ -17,6 +17,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" th:href="@{/favicon.png}" href="/favicon.png">
+  <link rel="apple-touch-icon" th:href="@{/favicon.png}" href="/favicon.png">
+
   <!-- Stylesheet -->
   <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
 </head>
@@ -29,7 +33,7 @@
     <div class="nav-container">
       <div class="nav-left">
         <a href="#home" class="brand-logo" id="navLogo">
-          <div class="logo-icon">K</div>
+          <img th:src="@{/images/kopa_logo.png}" src="/images/kopa_logo.png" alt="KOPA Coffee Logo" class="brand-logo-img">
           <div>
             <div class="logo-text">KOPA</div>
             <span class="logo-sub">Coffee Roasters</span>
@@ -83,7 +87,7 @@
   <div id="mobileNavDrawer" class="cart-drawer" style="left: 0; right: auto; transform: translateX(-100%);">
     <div class="cart-header">
       <div class="brand-logo">
-        <div class="logo-icon">K</div>
+        <img th:src="@{/images/kopa_logo.png}" src="/images/kopa_logo.png" alt="KOPA Logo" class="brand-logo-img">
         <div class="logo-text">KOPA</div>
       </div>
       <button class="btn-icon" id="closeMobileNavBtn">✕</button>
@@ -420,15 +424,15 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
               <div class="form-group">
                 <label class="form-label" for="resCustomerName">Full Name *</label>
-                <input type="text" class="form-control" id="resCustomerName" placeholder="Alexander Vance" required>
+                <input type="text" class="form-control" id="resCustomerName" placeholder="e.g. John Doe" required>
               </div>
               <div class="form-group">
                 <label class="form-label" for="resCustomerEmail">Email Address *</label>
-                <input type="email" class="form-control" id="resCustomerEmail" placeholder="guest@kopa.coffee" required>
+                <input type="email" class="form-control" id="resCustomerEmail" placeholder="e.g. john@example.com" required>
               </div>
               <div class="form-group">
                 <label class="form-label" for="resCustomerPhone">Phone Number *</label>
-                <input type="tel" class="form-control" id="resCustomerPhone" placeholder="+94 77 123 4567" required>
+                <input type="tel" class="form-control" id="resCustomerPhone" placeholder="e.g. +94 77 123 4567" required>
               </div>
             </div>
             <div class="form-group" style="margin-top: 16px;">
@@ -623,6 +627,7 @@
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
+          <img th:src="@{/images/kopa_logo.png}" src="/images/kopa_logo.png" alt="KOPA Coffee Roasters Logo" class="footer-logo-img">
           <div class="footer-wordmark">KOPA</div>
           <p class="footer-tagline">"Small cup. Big moments."</p>
           <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">
@@ -648,6 +653,7 @@
               <li><a href="#location">Our Roastery</a></li>
               <li><a href="mailto:hello@kopa.coffee">Careers</a></li>
               <li><a href="#about">Ethics & Sourcing</a></li>
+              <li><a href="#" data-action="open-cookie-preferences">Cookie Preferences</a></li>
             </ul>
           </div>
 
@@ -775,21 +781,18 @@
         <form id="authLoginForm">
           <div class="form-group" style="margin-bottom: 16px;">
             <label class="form-label" for="loginEmailInput">Email</label>
-            <input type="email" class="form-control" id="loginEmailInput" value="guest@kopa.coffee" required>
+            <input type="email" class="form-control" id="loginEmailInput" placeholder="name@domain.com" required>
           </div>
           <div class="form-group" style="margin-bottom: 20px;">
             <label class="form-label" for="loginPasswordInput">Password</label>
-            <input type="password" class="form-control" id="loginPasswordInput" value="kopa123" required>
+            <input type="password" class="form-control" id="loginPasswordInput" placeholder="••••••••" required>
           </div>
           <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 16px;">
             Sign In
           </button>
 
-          <!-- 1-Click Demo Account -->
-          <div style="text-align: center;">
-            <button type="button" class="btn btn-outline btn-sm" id="authDemoLoginBtn" style="width: 100%;">
-              ⚡ Quick 1-Click Demo Login
-            </button>
+          <div style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+            Looking for social sign in? <a th:href="@{/signin}" href="/signin" style="color: var(--accent-amber); font-weight: 600;">Open Sign In Page</a>
           </div>
         </form>
 
@@ -797,7 +800,7 @@
         <form id="authRegisterForm" style="display: none;">
           <div class="form-group" style="margin-bottom: 14px;">
             <label class="form-label" for="regNameInput">Full Name</label>
-            <input type="text" class="form-control" id="regNameInput" placeholder="Alexander Vance" required>
+            <input type="text" class="form-control" id="regNameInput" placeholder="e.g. Liam Vance" required>
           </div>
           <div class="form-group" style="margin-bottom: 14px;">
             <label class="form-label" for="regEmailInput">Email</label>
@@ -811,9 +814,13 @@
             <label class="form-label" for="regPasswordInput">Password</label>
             <input type="password" class="form-control" id="regPasswordInput" placeholder="••••••••" required>
           </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%;">
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 16px;">
             Create KOPA Account
           </button>
+
+          <div style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+            Prefer Google or Apple? <a th:href="@{/signup}" href="/signup" style="color: var(--accent-amber); font-weight: 600;">Open Sign Up Page</a>
+          </div>
         </form>
       </div>
     </div>
@@ -840,6 +847,65 @@
       <p style="font-size: 0.8rem; color: var(--text-muted);">
         Show this QR code at the barista counter upon arrival.
       </p>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Cookie Consent Pop-up Window
+       ======================================================================== -->
+  <div class="cookie-consent-popup" id="cookieConsentPopup" aria-hidden="true">
+    <div class="cookie-popup-content">
+      <div class="cookie-header">
+        <div class="cookie-icon-badge">
+          <span>🍪</span>
+        </div>
+        <div>
+          <h4 class="cookie-title">Fresh Cookies & Privacy</h4>
+          <span class="cookie-sub">Personalized coffee experience</span>
+        </div>
+        <button class="cookie-close-btn" id="cookieDismissBtn" aria-label="Dismiss cookie notice">✕</button>
+      </div>
+
+      <p class="cookie-desc">
+        We use cookies and digital brew-markers to remember your roast preferences, keep your table reservations handy, and ensure a seamless coffee ordering experience.
+      </p>
+
+      <!-- Collapsible Preferences -->
+      <div class="cookie-preferences" id="cookiePreferencesSection" style="display: none;">
+        <div class="cookie-pref-item">
+          <div>
+            <span class="cookie-pref-title">Strictly Necessary</span>
+            <span class="cookie-pref-note">Required for reservations & cart flow</span>
+          </div>
+          <input type="checkbox" checked disabled class="cookie-switch">
+        </div>
+        <div class="cookie-pref-item">
+          <div>
+            <span class="cookie-pref-title">Brew Preferences</span>
+            <span class="cookie-pref-note">Remembers preferred milk & cup size</span>
+          </div>
+          <input type="checkbox" checked id="prefAnalytics" class="cookie-switch">
+        </div>
+        <div class="cookie-pref-item">
+          <div>
+            <span class="cookie-pref-title">Tasting Invitations</span>
+            <span class="cookie-pref-note">Exclusive seasonal micro-lot alerts</span>
+          </div>
+          <input type="checkbox" id="prefMarketing" class="cookie-switch">
+        </div>
+      </div>
+
+      <div class="cookie-actions">
+        <button type="button" class="btn btn-primary btn-sm cookie-btn-accept" id="cookieAcceptAllBtn">
+          Accept All Cookies
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm cookie-btn-essential" id="cookieEssentialBtn">
+          Essential Only
+        </button>
+        <button type="button" class="cookie-customize-link" id="cookieTogglePrefBtn">
+          Customize Preferences ▼
+        </button>
+      </div>
     </div>
   </div>
 
