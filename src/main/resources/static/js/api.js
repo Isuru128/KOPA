@@ -7,6 +7,27 @@
 const API_BASE = '/api';
 
 export const ApiClient = {
+  getToken() {
+    return localStorage.getItem('kopa_token') || '';
+  },
+
+  setToken(token) {
+    if (token) {
+      localStorage.setItem('kopa_token', token);
+    } else {
+      localStorage.removeItem('kopa_token');
+    }
+  },
+
+  getAuthHeaders(extraHeaders = {}) {
+    const headers = { ...extraHeaders };
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  },
+
   // Products
   async getProducts(category = '') {
     try {
@@ -50,7 +71,7 @@ export const ApiClient = {
     try {
       const res = await fetch(`${API_BASE}/reservations`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(reservationPayload)
       });
       if (!res.ok) throw new Error('Failed to create reservation');
@@ -65,7 +86,9 @@ export const ApiClient = {
 
   async getUserReservations(email) {
     try {
-      const res = await fetch(`${API_BASE}/reservations/user/${encodeURIComponent(email)}`);
+      const res = await fetch(`${API_BASE}/reservations/user/${encodeURIComponent(email)}`, {
+        headers: this.getAuthHeaders()
+      });
       if (!res.ok) throw new Error('Failed to fetch user reservations');
       const data = await res.json();
       const local = FallbackData.getLocalReservations(email);
@@ -84,7 +107,8 @@ export const ApiClient = {
   async cancelReservation(idOrCode) {
     try {
       const res = await fetch(`${API_BASE}/reservations/${idOrCode}/cancel`, {
-        method: 'PUT'
+        method: 'PUT',
+        headers: this.getAuthHeaders()
       });
       if (!res.ok) throw new Error('Cancel failed');
       return await res.json();
@@ -93,50 +117,69 @@ export const ApiClient = {
     }
   },
 
-  // Authentication
+  // Authentication & JWT
   async login(email, password) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Login failed');
-      }
-      return await res.json();
-    } catch (err) {
-      return FallbackData.login(email, password);
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Invalid email or password');
     }
+    if (data.token) {
+      this.setToken(data.token);
+    }
+    return data.user;
   },
 
   async register(name, email, phone, password) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, password })
-      });
-      if (!res.ok) throw new Error('Registration failed');
-      return await res.json();
-    } catch (err) {
-      return FallbackData.register(name, email, phone, password);
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Registration failed');
     }
+    if (data.token) {
+      this.setToken(data.token);
+    }
+    return data.user;
   },
 
-  async getDemoUser() {
+  async socialAuth(provider, email, name, avatarUrl = '') {
+    const res = await fetch(`${API_BASE}/auth/social`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider, email, name, avatarUrl })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Social authentication failed');
+    }
+    if (data.token) {
+      this.setToken(data.token);
+    }
+    return data.user;
+  },
+
+  async getCurrentUser() {
+    const token = this.getToken();
+    if (!token) return null;
     try {
-      const res = await fetch(`${API_BASE}/auth/demo`);
-      if (res.ok) return await res.json();
-    } catch (e) {}
-    return {
-      id: 'usr-demo-1',
-      name: 'Alexander Vance',
-      email: 'guest@kopa.coffee',
-      phone: '+94 77 123 4567',
-      role: 'CUSTOMER'
-    };
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Failed to fetch user with JWT token:', e);
+    }
+    return null;
   }
 };
 
@@ -339,29 +382,5 @@ const FallbackData = {
       return item;
     }
     return null;
-  },
-
-  login(email, password) {
-    const user = {
-      id: 'usr-1',
-      name: email.split('@')[0],
-      email: email,
-      phone: '+94 77 123 4567',
-      role: 'CUSTOMER'
-    };
-    localStorage.setItem('kopa_auth_user', JSON.stringify(user));
-    return user;
-  },
-
-  register(name, email, phone, password) {
-    const user = {
-      id: 'usr-' + Date.now(),
-      name,
-      email,
-      phone,
-      role: 'CUSTOMER'
-    };
-    localStorage.setItem('kopa_auth_user', JSON.stringify(user));
-    return user;
   }
 };
