@@ -20,13 +20,28 @@ export const Dashboard = {
     const grid = document.getElementById('myReservationsGrid');
     if (!grid) return;
 
+    const currentUser = Auth.getCurrentUser();
+    if (!currentUser || !currentUser.email) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--bg-surface); border: 1px dashed var(--border-card); border-radius: var(--radius-lg);">
+          <div style="font-size: 2.5rem; margin-bottom: 12px; color: var(--accent-caramel);">☕</div>
+          <h3 style="margin-bottom: 8px; font-family: var(--font-serif); font-size: 1.4rem;">Sign in to view your reservations</h3>
+          <p style="color: var(--text-secondary); max-width: 440px; margin: 0 auto 20px;">
+            Access all your confirmed table bookings, live QR passes, and specialty pre-orders.
+          </p>
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <a href="/signin" class="btn btn-primary btn-sm">Sign In</a>
+            <a href="/signup" class="btn btn-outline btn-sm">Create Account</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
     grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">Loading your KOPA moments...</div>';
 
-    const currentUser = Auth.getCurrentUser();
-    const email = currentUser ? currentUser.email : 'guest@kopa.coffee';
-
     try {
-      this.reservations = await ApiClient.getUserReservations(email);
+      this.reservations = await ApiClient.getUserReservations(currentUser.email);
       this.render();
     } catch (e) {
       grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">Failed to load reservations.</div>';
